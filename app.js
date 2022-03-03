@@ -9,6 +9,9 @@ mongoose.connect(process.env.MONGO_URI)
 .then(()=>console.log("Connected to DB !!! && Server running on PORT : "+process.env.PORT))
 .catch(err=>console.log(err.message));
 
+var indexRouter = require('./routes/index.router');
+
+
 var app = express();
 
 app.use(logger('dev'));
@@ -16,6 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use('/', indexRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
