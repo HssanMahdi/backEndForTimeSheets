@@ -8,7 +8,7 @@ addition:Number,
 overtime:Number,
 deductions:Number,
 totalSalary:Number,
-employees : [{ type: Schema.ObjectId, ref: 'Employee' }]
+employees : [{ type: Schema.ObjectId, ref: 'employees' }]
 
 }
 );
