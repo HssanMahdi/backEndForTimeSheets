@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require("bcrypt")
 require('mongoose-type-email');
 const Schema = mongoose.Schema;
 
@@ -11,7 +12,7 @@ lastName:{
     type: String
 },
 email:{
-    type: mongoose.SchemaTypes.Email
+    type: String
 },
 phone:{
     type: Number
@@ -27,50 +28,65 @@ password:{
 	type: String,
     required: true
 },
-role:{ 
-    type: String,
+isManager:{ 
+    type: Boolean,
+    default : false
 },
 
 skills : [{ type: String }],
 
 todaysWorkedHours:  {
-        type: Number,
+        type: Number
 },
 
-hourPrice:  {
-        type: Number,
+hourPrice:  {       
+     type: Number
 },
     
 totalWorkedHours:{
-        type: Number,
+    type: Number
 },
 
 overTimeHours:{
-		type: Number,
+	type: Number
 },
 
-// leavesTaken:{},
+leavesTaken:{
+    type: Number
+},
 
-// leavesLeft:{},
+leavesLeft:{
+     type: Number
+},
 
-//events : [{ type: Schema.ObjectId, ref: 'Event' }],
+images:{
+    type: "String",
+    required: true,
+    default:
+      "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
+},
+events : [{ type: Schema.ObjectId, ref: 'events' }],
 
-//files : [{ type: Schema.ObjectId, ref: 'File' }],
+files : [{ type: Schema.ObjectId, ref: 'files' }],
 
-//tasks : [{ type: Schema.ObjectId, ref: 'Task' }],
+tasks : [{ type: Schema.ObjectId, ref: 'tasks' }],
 
-//company : [{ type: Schema.ObjectId, ref: 'Company' }],
+company : { type: Schema.ObjectId, ref: 'companys' },
 
-//leaves : [{ type: Schema.ObjectId, ref: 'Leaves' }],
+leaves : [{ type: Schema.ObjectId, ref: 'leaves' }],
 
-//salary : [{ type: Schema.ObjectId, ref: 'Salary' }],
+salary : [{ type: Schema.ObjectId, ref: 'salary' }],
 
-projects : [{ type: Schema.ObjectId, ref: 'Project' }]
+projects : [{ type: Schema.ObjectId, ref: 'projects' }]
 },
 
 { timestamps: true
     });
 
+EmployeeSchema.methods.matchPassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+  };
+  
 var employees = mongoose.model('employees', EmployeeSchema);
 
 module.exports = employees

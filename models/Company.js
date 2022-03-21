@@ -3,13 +3,13 @@ const Schema = mongoose.Schema;
 
 
 var CompanySchema = new Schema({
-name:{
+companyName:{
     type: String
 },
 },
 { timestamps: true
 });
 
-var Companys = mongoose.model('Companys', CompanySchema);
+var Companys = mongoose.model('companys', CompanySchema);
 
 module.exports = Companys

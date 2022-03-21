@@ -3,12 +3,15 @@ const Schema = mongoose.Schema;
 
 
 var ChatSchema = new Schema({
+chatName:{
+    type:String, trim: true
+},
 isGroup:{
     type: Boolean
 },
-employees : [{ type: Schema.ObjectId, ref: 'Employee' }],
-lastMessage : { type: Schema.ObjectId, ref: 'Message' }, 
-groupAdmin : { type: Schema.ObjectId, ref: 'Employee' }
+employees : [{ type: Schema.ObjectId, ref: 'employees' }],
+lastMessage : { type: Schema.ObjectId, ref: 'messages' }, 
+groupAdmin : { type: Schema.ObjectId, ref: 'employees' }
 },
 { timestamps: true
 });

@@ -4,10 +4,10 @@ const Schema = mongoose.Schema;
 
 var MessageSchema = new Schema({
 content:{
-    type: String
+    type: String, trim: true
 },
-sender : { type: Schema.ObjectId, ref: 'Employee' },
-chat : { type: Schema.ObjectId, ref: 'Chat' }
+sender : { type: Schema.ObjectId, ref: 'employees' },
+chat : { type: Schema.ObjectId, ref: 'chats' }
 },
 { 
     timestamps: true

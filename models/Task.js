@@ -27,8 +27,8 @@ description:{
     },
 
 
-        Project : { type: Schema.ObjectId, ref: 'Project' },
-        employees : [{ type: Schema.ObjectId, ref: 'Employee' }]
+        Project : { type: Schema.ObjectId, ref: 'projects' },
+        employees : [{ type: Schema.ObjectId, ref: 'employees' }]
 
 },
 { timestamps: true

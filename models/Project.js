@@ -23,8 +23,8 @@ description:{
 technologies:[{type: String,
         required: true}],
 
-tasks : [{ type: Schema.ObjectId, ref: 'Task' }],
-employees : [{ type: Schema.ObjectId, ref: 'Employee' }]
+tasks : [{ type: Schema.ObjectId, ref: 'tasks' }],
+employees : [{ type: Schema.ObjectId, ref: 'employees' }]
 
 },
 { timestamps: true

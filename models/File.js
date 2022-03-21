@@ -5,7 +5,7 @@ var FileSchema = new Schema({
 fileName:{
         type :String
     },
-owner : { type: Schema.ObjectId, ref: 'Employee' }
+owner : { type: Schema.ObjectId, ref: 'employees' }
 },
 { 
     timestamps: true
