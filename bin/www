@@ -4,16 +4,16 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('timesheet-backend:server');
-var http = require('http');
+var app = require("../app");
+var debug = require("debug")("timesheet-backend:server");
+var http = require("http");
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+var port = normalizePort(process.env.PORT || "3001");
+app.set("port", port);
 
 /**
  * Create HTTP server.
@@ -27,29 +27,93 @@ var server = http.createServer(app);
 
 server.listen(port);
 const io = require("socket.io")(server, {
-	cors: {
-		origin: "http://localhost:3000",
-		methods: [ "GET", "POST" ]
-	}
-})
-
+  // pingTimeout: 60000,
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
+var socktable = [];
 io.on("connection", (socket) => {
-	socket.emit("me", socket.id)
+  let oneSocket = {
+    idSocket: socket.id,
+    _id: "",
+    userName: "",
+  };
+  socktable.push(oneSocket);
+  socket.on("persistIdEmployee", (data) => {
+    for (let i = 0; i < socktable.length; i++) {
+      if (socktable[i].idSocket == data.me) {
+        // console.log("socket[i]",socktable[i])
+        socktable[i].userName = data.name;
+        socktable[i]._id = data.id;
+      }
+    }
+    // console.log("Sockeeeeeeeeeeeeeeeeeeeeeeeets : ",socktable);
+  });
+  //construction room pour user connecté
+  socket.on("setup", (userData) => {
+    socket.join(userData._id);
+    socket.emit("connected");
+  });
+  //autre user va participer room
+  socket.on("join chat", (room) => {
+    socket.join(room);
+    // console.log("User Joined Room: " + room);
+  });
+  socket.on("typing", (room) => {
+    socket.broadcast.in(room).emit("typing");
+    console.log("1");
+  });
+  socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
-	socket.on("disconnect", () => {
-		socket.broadcast.emit("callEnded")
-	})
+  socket.on("new message", (newMessageRecieved) => {
+    var chat = newMessageRecieved.chat;
 
-	socket.on("callUser", (data) => {
-		io.to(data.userToCall).emit("callUser", { signal: data.signalData, from: data.from, name: data.name })
-	})
+    if (!chat.employees) return console.log("chat.users not defined");
 
-	socket.on("answerCall", (data) => {
-		io.to(data.to).emit("callAccepted", data.signal)
-	})
-})
-server.on('error', onError);
-server.on('listening', onListening);
+    chat.employees.forEach((user) => {
+      if (user._id == newMessageRecieved.sender._id) return;
+
+      socket.in(user._id).emit("message recieved", newMessageRecieved);
+    });
+  });
+
+  //Video Chat
+
+  socket.emit("me", socket.id);
+  socket.on("disconnect", () => {
+    socket.broadcast.emit("callEnded");
+  });
+
+  socket.on("callUser", (data) => {
+    let caller;
+    let toCall;
+    for (let i = 0; i < socktable.length; i++) {
+      if (socktable[i]._id == data.from) {
+        caller = socktable[i].idSocket;
+      }
+      if (socktable[i]._id == data.userToCall) {
+        toCall = socktable[i].idSocket;
+      }
+    }
+    // console.log("socktable : ",socktable)
+    io.to(toCall).emit("callUser", {
+      signal: data.signalData,
+      from: caller,
+      name: data.name,
+    });
+    console.log("caller : ", caller);
+    console.log("toCall : ", toCall);
+  });
+
+  socket.on("answerCall", (data) => {
+    io.to(data.to).emit("callAccepted", data.signal);
+  });
+});
+
+server.on("error", onError);
+server.on("listening", onListening);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -76,22 +140,20 @@ function normalizePort(val) {
  */
 
 function onError(error) {
-  if (error.syscall !== 'listen') {
+  if (error.syscall !== "listen") {
     throw error;
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  var bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+    case "EACCES":
+      console.error(bind + " requires elevated privileges");
       process.exit(1);
       break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+    case "EADDRINUSE":
+      console.error(bind + " is already in use");
       process.exit(1);
       break;
     default:
@@ -105,8 +167,6 @@ function onError(error) {
 
 function onListening() {
   var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+  var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
+  debug("Listening on " + bind);
 }

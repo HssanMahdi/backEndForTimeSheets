@@ -3,7 +3,6 @@ const Chat = require("../models/Chat");
 const Employee = require("../models/Employee");
 const Message = require("../models/Message");
 
-
 const accessChat = async (req, res) => {
   const { employeeId } = req.body;
 
@@ -36,7 +35,6 @@ const accessChat = async (req, res) => {
       employees: [req.employee._id, employeeId],
     };
     try {
-     
       const createdChat = await Chat.create(chatData);
       const FullChat = await Chat.findOne({ _id: createdChat._id }).populate(
         "employees",
@@ -130,7 +128,6 @@ const renameGroup = asyncHandler(async (req, res) => {
   }
 });
 
-
 const removeFromGroup = asyncHandler(async (req, res) => {
   const { chatId, employeeId } = req.body;
 
@@ -155,7 +152,6 @@ const removeFromGroup = asyncHandler(async (req, res) => {
     res.json(removed);
   }
 });
-
 
 const addToGroup = asyncHandler(async (req, res) => {
   const { chatId, employeeId } = req.body;
@@ -183,22 +179,19 @@ const addToGroup = asyncHandler(async (req, res) => {
 });
 
 const deleteChat = asyncHandler(async (req, res) => {
-  var chat = await Chat.findOne({ _id: req.params.chatId})
+  var chat = await Chat.findOne({ _id: req.params.chatId });
   if (chat) {
-    
     if (chat.groupAdmin.equals(req.employee._id)) {
-       await Message.deleteMany({chat:{$eq: chat._id}})
-       await Chat.remove({_id:{$eq: chat._id}})
+      await Message.deleteMany({ chat: { $eq: chat._id } });
+      await Chat.remove({ _id: { $eq: chat._id } });
       res.status(200).send("Deleted");
     } else {
-      res.status(401).send("you are not this group's admin");  
+      res.status(401).send("you are not this group's admin");
     }
-    
   } else {
     console.log("Ce chat n'existe pas");
- }
+  }
 });
-
 
 module.exports = {
   accessChat,
@@ -207,5 +200,5 @@ module.exports = {
   renameGroup,
   addToGroup,
   removeFromGroup,
-  deleteChat
+  deleteChat,
 };
