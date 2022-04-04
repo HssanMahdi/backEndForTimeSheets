@@ -44,22 +44,29 @@ io.on("connection", (socket) => {
   socket.on("persistIdEmployee", (data) => {
     for (let i = 0; i < socktable.length; i++) {
       if (socktable[i].idSocket == data.me) {
-        // console.log("socket[i]",socktable[i])
         socktable[i].userName = data.name;
         socktable[i]._id = data.id;
       }
     }
-    // console.log("Sockeeeeeeeeeeeeeeeeeeeeeeeets : ",socktable);
   });
   //construction room pour user connecté
   socket.on("setup", (userData) => {
-    socket.join(userData._id);
+    socket.join(userData._id);  
     socket.emit("connected");
   });
   //autre user va participer room
   socket.on("join chat", (room) => {
     socket.join(room);
     // console.log("User Joined Room: " + room);
+  });
+  socket.on("groupChatCreation", (selectedUsers) => {
+    for (let i = 0; i < selectedUsers.length; i++) {
+      for (let j = 0; j < socktable.length; j++) {
+        if (socktable[j]._id == selectedUsers[i]._id) {
+          socket.broadcast.to(socktable[j].idSocket).emit("refetchChats");
+        }
+      }
+    }
   });
   socket.on("typing", (room) => {
     socket.broadcast.in(room).emit("typing");
@@ -80,8 +87,16 @@ io.on("connection", (socket) => {
   });
 
   //Video Chat
-
-  socket.emit("me", socket.id);
+  socket.on("sendMe",(data)=>{
+    var me;
+    for (let i = 0; i < socktable.length; i++) {
+      if (socktable[i]._id == data.me) {
+        me = socktable[i].idSocket;
+      }
+    }
+    socket.emit("me", me);
+  });
+  // socket.emit("me", socket.id);
   socket.on("disconnect", () => {
     socket.broadcast.emit("callEnded");
   });
@@ -103,8 +118,8 @@ io.on("connection", (socket) => {
       from: caller,
       name: data.name,
     });
-    console.log("caller : ", caller);
-    console.log("toCall : ", toCall);
+    // console.log("caller : ", caller);
+    // console.log("toCall : ", toCall);
   });
 
   socket.on("answerCall", (data) => {
@@ -161,6 +176,10 @@ function onError(error) {
   }
 }
 
+process.on('uncaughtException', function (err) {
+  console.error(err);
+  console.log("Node NOT Exiting...");
+});
 /**
  * Event listener for HTTP server "listening" event.
  */
