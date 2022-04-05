@@ -4,18 +4,53 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const Document = require('./models/Document')
 require('dotenv').config();
 const { notFound, errorHandler } = require("./middlewares/errorMiddleware");
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to DB !!! && Server running on PORT : " + process.env.PORT))
   .catch(err => console.log(err.message));
+  const io = require("socket.io")(3002, {
+    cors: {
+      origin: "http://localhost:3000",
+      path: "/FileEdit",
+      methods: ["Get", "Post"],
+    },
+  });
+  const defaultValue = ""
+  io.on("connection", socket => {
+      socket.on("get-document", async documentId => {
+      const document = await findorCreateDocument(documentId)
+      socket.join(documentId)
+      socket.emit("load-document", document.data)
+  
+      socket.on("send-message", delta => {
+      socket.broadcast.to(documentId).emit("receive-changes", delta);
+      });
+      socket.on("save-document", async data => {
+        await Document.findByIdAndUpdate(documentId, {data})
+      })
+    });
+  });
+  
+  async function findorCreateDocument(id) {
+    if (id == null) return
+  
+    const document = await Document.findById(id)
+    if (document) return document
+    return await Document.create({_id: id, data: defaultValue})
+  }
 
 var indexRouter = require('./routes/index.router');
 var employeeRouter = require('./routes/employees.route');
 var companyRouter = require('./routes/companies.route');
 var chatRouter = require('./routes/chat.route');
 var messageRouter = require('./routes/message.route');
+var eventRouter = require('./routes/event.router');
+var fileRouter = require('./routes/file.router');
 
 var app = express();
 
@@ -30,6 +65,8 @@ app.use('/employee', employeeRouter);
 app.use('/company', companyRouter);
 app.use('/chat', chatRouter);
 app.use('/message', messageRouter);
+app.use('/calendar',eventRouter);
+app.use('/file',fileRouter.routes);
 app.use(notFound);
 app.use(errorHandler);
 
@@ -49,4 +86,6 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
+app.use(bodyParser.json());
+app.use('/uploads',express.static(path.join(__dirname, 'uploads')));
 module.exports = app;

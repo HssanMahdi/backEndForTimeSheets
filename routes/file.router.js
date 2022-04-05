@@ -1,7 +1,7 @@
 'use strict';
 const express = require('express');
 const router = express.Router();
-const {upload} = require('../middleware/upload');
+const {upload} = require('../middlewares/upload');
 const {singleFileUpload, multipleFileUpload, getallSingleFiles, getallMultipleFiles, DeleteSingleFile, DeleteMultipleFiles} = require('../controllers/fileUpload.controller');
 
  /* add single file*/

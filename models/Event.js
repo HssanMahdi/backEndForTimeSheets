@@ -5,19 +5,16 @@ var EventSchema = new Schema({
 eventName:{
     type :String
 },
-fileName:{
-    type:String
-},
 startDate:{
-    type: Date,
-    required: true
+    type: Date
 },
 endDate:{
-    type: Date,
-    required: true
+    type: Date
 },
-
-participants : [{ type: Schema.ObjectId, ref: 'Employee' }]
+eventDescription:{
+    type: String
+},
+participants : [{ type: Schema.ObjectId, ref: 'employees' }]
 
 }
 );
