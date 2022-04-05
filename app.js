@@ -51,6 +51,7 @@ var chatRouter = require('./routes/chat.route');
 var messageRouter = require('./routes/message.route');
 var eventRouter = require('./routes/event.router');
 var fileRouter = require('./routes/file.router');
+var projectRouter = require('./routes/project');
 
 var app = express();
 
@@ -67,6 +68,7 @@ app.use('/chat', chatRouter);
 app.use('/message', messageRouter);
 app.use('/calendar',eventRouter);
 app.use('/file',fileRouter.routes);
+app.use('/projects', projectRouter);
 app.use(notFound);
 app.use(errorHandler);
 
