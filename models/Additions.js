@@ -3,7 +3,8 @@ const Schema = mongoose.Schema;
 
 var AdditionSchema = new Schema({
 name:String,
-amountOfAddition: Number
+amountOfAddition: Number,
+    date:Date
 }
 );
 

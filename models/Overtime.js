@@ -3,7 +3,9 @@ const Schema = mongoose.Schema;
 
 var OverTimeSchema = new Schema({
 name:String,
-hourlyRate: Number
+hourlyRate: Number,
+working_hours_per_day:Number
+
 }
 );
 

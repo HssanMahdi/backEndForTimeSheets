@@ -52,6 +52,14 @@ var messageRouter = require('./routes/message.route');
 var eventRouter = require('./routes/event.router');
 var fileRouter = require('./routes/file.router');
 var projectRouter = require('./routes/project');
+const calcul_salary=require('./routes/salary_functions');
+var HolidayRouter = require('./routes/holiday-router');
+var SalaryRouter = require('./routes/salary-router');
+var AdditionRouter = require('./routes/addition-router');
+var OvertimeRouter = require('./routes/overtime-router');
+var DeductionRouter = require('./routes/deduction-router');
+var LeaveRouter = require('./routes/leave-router');
+var calculSalaryRouter=require('./routes/salary_functions');
 
 var app = express();
 
@@ -69,6 +77,13 @@ app.use('/message', messageRouter);
 app.use('/calendar',eventRouter);
 app.use('/file',fileRouter.routes);
 app.use('/projects', projectRouter);
+app.use('/holidays', HolidayRouter);
+app.use('/salarys', SalaryRouter);
+app.use('/additions', AdditionRouter);
+app.use('/deductions', DeductionRouter);
+app.use('/overtime', OvertimeRouter);
+app.use('/leaves', LeaveRouter);
+app.use('/calculSalary', calculSalaryRouter);
 app.use(notFound);
 app.use(errorHandler);
 
