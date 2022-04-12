@@ -134,8 +134,9 @@ const changePassword = async(req, res) => {
 
 const deleteEmployee = async(req, res) => {
     try {
+        const { id } = req.params;
         const employee = await Employee.findOneAndRemove({
-            _id: { $eq: idEmployee },
+            _id: { $eq: id },
         });
         if (employee) {
             res.status(200);
@@ -229,6 +230,23 @@ const updateEmployeeNotifications = async(req, res) => {
         console.log(error.message);
     }
 };
+
+const changeEmployeeState = async(req, res) => {
+    try {
+        const { id } = req.params;
+        const { isManager } = req.body;
+        await Employee.updateOne({ _id: id }, {
+            $set: {
+                isManager: isManager
+            }
+        });
+        res.status(200);
+        res.send("Employee Updated successfully");
+    } catch (error) {
+        res.status(500).send(error.message);
+        console.log(error.message);
+    }
+};
 module.exports = {
     login,
     signUp,
@@ -238,5 +256,6 @@ module.exports = {
     deleteEmployee,
     signUpInACompany,
     updateEmployeeHours,
-    updateEmployeeNotifications
+    updateEmployeeNotifications,
+    changeEmployeeState
 };
