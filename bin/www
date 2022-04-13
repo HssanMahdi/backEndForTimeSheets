@@ -34,6 +34,8 @@ const io = require("socket.io")(server, {
   },
 });
 var socktable = [];
+const users = {};
+const socketToRoom = {};
 io.on("connection", (socket) => {
   let oneSocket = {
     idSocket: socket.id,
@@ -51,7 +53,7 @@ io.on("connection", (socket) => {
   });
   //construction room pour user connecté
   socket.on("setup", (userData) => {
-    socket.join(userData._id);  
+    socket.join(userData._id);
     socket.emit("connected");
   });
   //autre user va participer room
@@ -87,7 +89,7 @@ io.on("connection", (socket) => {
   });
 
   //Video Chat
-  socket.on("sendMe",(data)=>{
+  socket.on("sendMe", (data) => {
     var me;
     for (let i = 0; i < socktable.length; i++) {
       if (socktable[i]._id == data.me) {
@@ -97,9 +99,6 @@ io.on("connection", (socket) => {
     socket.emit("me", me);
   });
   socket.emit("me", socket.id);
-  socket.on("disconnect", () => {
-    socket.broadcast.emit("callEnded");
-  });
 
   socket.on("callUser", (data) => {
     let caller;
@@ -124,6 +123,46 @@ io.on("connection", (socket) => {
 
   socket.on("answerCall", (data) => {
     io.to(data.to).emit("callAccepted", data.signal);
+  });
+  /// group chat
+  socket.on("join room", (roomID) => {
+    if (users[roomID]) {
+      const length = users[roomID].length;
+      if (length === 8) {
+        socket.emit("room full");
+        return;
+      }
+      users[roomID].push(socket.id);
+    } else {
+      users[roomID] = [socket.id];
+    }
+    socketToRoom[socket.id] = roomID;
+    const usersInThisRoom = users[roomID].filter((id) => id !== socket.id);
+
+    socket.emit("all users", usersInThisRoom);
+  });
+
+  socket.on("sending signal", (payload) => {
+    io.to(payload.userToSignal).emit("user joined", {
+      signal: payload.signal,
+      callerID: payload.callerID,
+    });
+  });
+
+  socket.on("returning signal", (payload) => {
+    io.to(payload.callerID).emit("receiving returned signal", {
+      signal: payload.signal,
+      id: socket.id,
+    });
+  });
+  socket.on("disconnect", () => {
+    socket.broadcast.emit("callEnded");
+    const roomID = socketToRoom[socket.id];
+    let room = users[roomID];
+    if (room) {
+      room = room.filter((id) => id !== socket.id);
+      users[roomID] = room;
+    }
   });
 });
 
@@ -176,7 +215,7 @@ function onError(error) {
   }
 }
 
-process.on('uncaughtException', function (err) {
+process.on("uncaughtException", function (err) {
   console.error(err);
   console.log("Node NOT Exiting...");
 });
