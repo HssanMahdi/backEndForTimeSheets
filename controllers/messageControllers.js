@@ -9,7 +9,7 @@ const Chat = require("../models/Chat");
 const allMessages = asyncHandler(async (req, res) => {
   try {
     const messages = await Message.find({ chat: req.params.chatId })
-      .populate("sender", "usename images email")
+      .populate("sender", "userName images email")
       .populate("chat");
     res.json(messages);
   } catch (error) {
@@ -22,7 +22,7 @@ const allMessages = asyncHandler(async (req, res) => {
 //@route           POST /api/Message/
 //@access          Protected
 const sendMessage = asyncHandler(async (req, res) => {
-  const { content, chatId } = req.body;
+  const { content, isFile, chatId } = req.body;
 
   if (!content || !chatId) {
     console.log("Invalid data passed into request");
@@ -33,6 +33,7 @@ const sendMessage = asyncHandler(async (req, res) => {
     sender: req.employee._id,
     content: content,
     chat: chatId,
+    isFile: isFile,
   };
 
   try {
