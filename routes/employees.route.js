@@ -1,5 +1,5 @@
 var express = require('express');
-const { login, signUp, companysEmployees, forgetPassword, changePassword, deleteEmployee, signUpInACompany, updateEmployeeHours, updateEmployeeNotifications, changeEmployeeState } = require('../controllers/employees.controller');
+const { login, signUp, companysEmployees, forgetPassword, changePassword, deleteEmployee, signUpInACompany, updateEmployeeHours, updateEmployeeNotifications, changeEmployeeState, getEmployeeImage, faceIdLogin } = require('../controllers/employees.controller');
 const { protect } = require('../middlewares/authMiddleware');
 var router = express.Router();
 
@@ -13,7 +13,8 @@ router.put('/updatehours', protect, updateEmployeeHours);
 router.post('/updatenotifs', protect,updateEmployeeNotifications);
 router.put('/changeemployeestate/:id',protect,changeEmployeeState)
 router.delete('/:id', protect, deleteEmployee);
-// router.put('/',);
+router.post('/employeeimage',getEmployeeImage);
+router.post('/faceidlogin',faceIdLogin)
 
 module.exports = router;
     

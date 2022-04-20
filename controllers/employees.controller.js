@@ -247,6 +247,46 @@ const changeEmployeeState = async(req, res) => {
         console.log(error.message);
     }
 };
+
+const getEmployeeImage = async(req, res) => {
+    try {
+        const {email} = req.body;
+        const image = await Employee.findOne({
+            email: { $eq: email },
+        }).select({_id:0, images:1});
+        if (image) {
+            res.status(200);
+            res.send(image);
+        } else {
+            res.status(404);
+            res.send("Problem with getting image");
+            return;
+        }
+    } catch (error) {
+        res.status(500).send(error.message);
+        console.log(error.message);
+    }
+};
+const faceIdLogin = async(req, res) => {
+    try {
+        const { email } = req.body;
+        const employee = await Employee.findOne({ email });
+        if (employee) {
+            await Employee.updateOne({ _id: employee._id }, { $set: { timeLastLogin: new Date() } });
+            const employee1 = await Employee.findOne({ email });
+            res.send({
+                employee1,
+                token: generateToken(employee._id),
+            });
+        } else {
+            res.status(401);
+            res.json("Invalid Email or Password");
+        }
+    } catch (error) {
+        res.status(500).send(error.message);
+        console.log(error.message);
+    }
+};
 module.exports = {
     login,
     signUp,
@@ -257,5 +297,7 @@ module.exports = {
     signUpInACompany,
     updateEmployeeHours,
     updateEmployeeNotifications,
-    changeEmployeeState
+    changeEmployeeState,
+    getEmployeeImage,
+    faceIdLogin
 };
