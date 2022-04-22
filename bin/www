@@ -78,14 +78,24 @@ io.on("connection", (socket) => {
 
   socket.on("new message", (newMessageRecieved) => {
     var chat = newMessageRecieved.chat;
-
     if (!chat.employees) return console.log("chat.users not defined");
-
+    // console.log(socktable)
     chat.employees.forEach((user) => {
       if (user._id == newMessageRecieved.sender._id) return;
 
       socket.in(user._id).emit("message recieved", newMessageRecieved);
     });
+    let employeeToNotify;
+    chat.employees.forEach((user) => {
+      if (user._id == newMessageRecieved.sender._id) return;
+      for (let j = 0; j < socktable.length; j++) {
+        if (socktable[j]._id == user._id) {
+          console.log("b3athet")
+          employeeToNotify=socktable[j].idSocket;
+        }
+      }
+    });
+    socket.broadcast.to(employeeToNotify).emit("message recieved", newMessageRecieved);
   });
 
   //Video Chat
