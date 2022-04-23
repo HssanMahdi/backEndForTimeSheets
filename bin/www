@@ -90,12 +90,14 @@ io.on("connection", (socket) => {
       if (user._id == newMessageRecieved.sender._id) return;
       for (let j = 0; j < socktable.length; j++) {
         if (socktable[j]._id == user._id) {
-          console.log("b3athet")
-          employeeToNotify=socktable[j].idSocket;
+          console.log("b3athet");
+          employeeToNotify = socktable[j].idSocket;
         }
       }
     });
-    socket.broadcast.to(employeeToNotify).emit("message recieved", newMessageRecieved);
+    socket.broadcast
+      .to(employeeToNotify)
+      .emit("message recieved", newMessageRecieved);
   });
 
   //Video Chat
@@ -112,23 +114,16 @@ io.on("connection", (socket) => {
 
   socket.on("callUser", (data) => {
     let caller;
-    let toCall;
+    let toCall1;
     for (let i = 0; i < socktable.length; i++) {
-      if (socktable[i]._id == data.from) {
-        caller = socktable[i].idSocket;
-      }
-      if (socktable[i]._id == data.userToCall) {
-        toCall = socktable[i].idSocket;
+      if (socktable[i]._id == data.toCall._id) {
+        toCall1 = socktable[i].idSocket;
       }
     }
-    // console.log("socktable : ",socktable)
-    io.to(toCall).emit("callUser", {
-      signal: data.signalData,
-      from: caller,
-      name: data.name,
+    io.to(toCall1).emit("calledUser", {
+      from: data.caller,
+      link: data.link,
     });
-    // console.log("caller : ", caller);
-    // console.log("toCall : ", toCall);
   });
 
   socket.on("answerCall", (data) => {
@@ -165,6 +160,55 @@ io.on("connection", (socket) => {
       id: socket.id,
     });
   });
+
+  socket.on("join roomsimple", (roomID) => {
+    if (users[roomID]) {
+      const length = users[roomID].length;
+      if (length === 2) {
+        console.log("akther m zouz");
+        socket.emit("room full");
+        return;
+      }
+      users[roomID].push(socket.id);
+    } else {
+      users[roomID] = [socket.id];
+    }
+    socketToRoom[socket.id] = roomID;
+    const usersInThisRoom = users[roomID].filter((id) => id !== socket.id);
+
+    socket.emit("all users", usersInThisRoom);
+    users[roomID].map(
+      (socke) => console.log(socke),
+      socket.emit("usersincall", users[roomID])
+    );
+  });
+
+  socket.on("hangup", (data) => {
+    let x;
+    for (let i = 0; i < socktable.length; i++) {
+      if (socktable[i]._id == data.tohangup._id) {
+        x = socktable[i].idSocket;
+      }
+    }
+    console.log(x);
+    io.to(x).emit("otherhangup");
+  });
+  socket.on("hanguptwo", (data) => {
+    let x;
+    if (data.caller == true) {
+      for (let i = 0; i < socktable.length; i++) {
+        if (socktable[i]._id == data.tohangup._id) {
+          x = socktable[i].idSocket;
+        }
+      }
+      io.to(x).emit("otherhanguptwo");
+    } else {
+      data.usersInCall.map((soc) => {
+        io.to(soc).emit("otherhanguptwo");
+      });
+    }
+  });
+
   socket.on("disconnect", () => {
     socket.broadcast.emit("callEnded");
     const roomID = socketToRoom[socket.id];
