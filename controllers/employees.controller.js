@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const send = require("../middlewares/mailMiddleware");
 require('dotenv').config();
 
-const login = async(req, res) => {
+const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const employee = await Employee.findOne({ email });
@@ -27,7 +27,7 @@ const login = async(req, res) => {
     }
 };
 
-const signUp = async(req, res) => {
+const signUp = async (req, res) => {
     try {
         const { email, password, company } = req.body;
         const compToAdd = {
@@ -57,7 +57,7 @@ const signUp = async(req, res) => {
     }
 };
 
-const companysEmployees = async(req, res) => {
+const companysEmployees = async (req, res) => {
     try {
         // const employees = await Employee.find().find({_id:{$ne:req.employee._id}}).find({company:{$eq:req.employee.company}});
         const keyword = req.query.search ?
@@ -82,7 +82,7 @@ const companysEmployees = async(req, res) => {
     }
 };
 
-const forgetPassword = async(req, res) => {
+const forgetPassword = async (req, res) => {
     try {
         const { email } = req.body;
         const employee = await Employee.findOne({ email });
@@ -90,7 +90,7 @@ const forgetPassword = async(req, res) => {
             const token = generateToken(employee._id);
             const link = `${process.env.FRONT_END}/resetpassword/${token}`;
             res.status(200)
-                // res.setHeader("Content-Type", "text/plain");
+            // res.setHeader("Content-Type", "text/plain");
             await send(employee.email, link).catch(console.error.message);
             res.send("mail sent");
         } else {
@@ -105,14 +105,14 @@ const forgetPassword = async(req, res) => {
         console.log(error.message);
     }
 };
-const changePassword = async(req, res) => {
+const changePassword = async (req, res) => {
     try {
         const { token } = req.params;
         const newPassword = req.body.password;
         const decoded = jwt.verify(
             token,
             process.env.JWT_SECRET,
-            async function(err, decoded) {
+            async function (err, decoded) {
                 if (err) {
                     console.log(err.message);
                     res.status(401);
@@ -132,7 +132,7 @@ const changePassword = async(req, res) => {
     }
 };
 
-const deleteEmployee = async(req, res) => {
+const deleteEmployee = async (req, res) => {
     try {
         const { id } = req.params;
         const employee = await Employee.findOneAndRemove({
@@ -152,7 +152,7 @@ const deleteEmployee = async(req, res) => {
     }
 };
 
-const signUpInACompany = async(req, res) => {
+const signUpInACompany = async (req, res) => {
     try {
         const { token } = req.params;
         const newEmployee1 = req.body;
@@ -165,7 +165,7 @@ const signUpInACompany = async(req, res) => {
         const decoded = jwt.verify(
             token,
             process.env.JWT_SECRET,
-            async function(err, decoded) {
+            async function (err, decoded) {
                 if (err) {
                     res.status(401);
                     res.send("This link is invalid or expired");
@@ -197,7 +197,7 @@ const signUpInACompany = async(req, res) => {
     }
 };
 
-const updateEmployeeHours = async(req, res) => {
+const updateEmployeeHours = async (req, res) => {
     try {
         const { todaysWorkedHours, totalWorkedHours, overTimeHours } = req.body;
         await Employee.updateOne({ _id: req.employee._id }, {
@@ -215,7 +215,7 @@ const updateEmployeeHours = async(req, res) => {
     }
 };
 
-const updateEmployeeNotifications = async(req, res) => {
+const updateEmployeeNotifications = async (req, res) => {
     try {
         const { notifications } = req.body;
         await Employee.updateOne({ _id: req.employee._id }, {
@@ -231,7 +231,7 @@ const updateEmployeeNotifications = async(req, res) => {
     }
 };
 
-const changeEmployeeState = async(req, res) => {
+const changeEmployeeState = async (req, res) => {
     try {
         const { id } = req.params;
         const { isManager } = req.body;
@@ -248,12 +248,12 @@ const changeEmployeeState = async(req, res) => {
     }
 };
 
-const getEmployeeImage = async(req, res) => {
+const getEmployeeImage = async (req, res) => {
     try {
-        const {email} = req.body;
+        const { email } = req.body;
         const image = await Employee.findOne({
             email: { $eq: email },
-        }).select({_id:0, images:1});
+        }).select({ _id: 0, images: 1 });
         if (image) {
             res.status(200);
             res.send(image);
@@ -267,7 +267,7 @@ const getEmployeeImage = async(req, res) => {
         console.log(error.message);
     }
 };
-const faceIdLogin = async(req, res) => {
+const faceIdLogin = async (req, res) => {
     try {
         const { email } = req.body;
         const employee = await Employee.findOne({ email });
@@ -287,6 +287,23 @@ const faceIdLogin = async(req, res) => {
         console.log(error.message);
     }
 };
+
+const updateEmployee = async (req, res) => {
+    try {
+        const updateQuery = req.body
+        const employee = await Employee.findOneAndUpdate({ _id: req.employee._id }, updateQuery, { new: true })
+        if (employee) {
+            res.status(200)
+            res.send(employee)
+        } else {
+            res.status(400)
+            res.send("something wrong")
+        }
+    } catch (error) {
+        res.status(500).send(error.message);
+        console.log(error.message);
+    }
+}
 module.exports = {
     login,
     signUp,
@@ -299,5 +316,6 @@ module.exports = {
     updateEmployeeNotifications,
     changeEmployeeState,
     getEmployeeImage,
-    faceIdLogin
+    faceIdLogin,
+    updateEmployee
 };
