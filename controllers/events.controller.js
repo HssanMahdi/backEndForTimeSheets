@@ -4,7 +4,12 @@ const tasks = require("../models/Task");
 
 const AddEvent = async (req, res) => {
   try {
-    await Events.create(req.body);
+    const event=await Events.create(req.body);
+    const e=await Events.findByIdAndUpdate(event._id,{ $push: { participants: req.employee._id }}).then((event)=>{
+      console.log(event)
+    }).catch((err) => {
+      res.status(500).send({ message: err.message });
+    });
     res.status(201).json({ message: "Event added with success" });
   } catch (error) {
     console.log(error.message);
@@ -68,6 +73,7 @@ const AddEmployeTaskToEvent = async (req, res) => {
               startDate: task.startDate,
               endDate: task.endDate,
               eventDescription: task.description,
+              
             }).save();
           })
           .catch((err) => {
@@ -82,8 +88,9 @@ const AddEmployeTaskToEvent = async (req, res) => {
 };
 
 const FindAllEvents = async (req, res) => {
+  console.log(req.employee._id)
   try {
-    const data = await Events.find();
+    const data = await Events.find({participants: { $in:[req.employee._id]}});
     res.status(201).json(data);
   } catch (error) {
     console.log(error.message);
@@ -92,7 +99,7 @@ const FindAllEvents = async (req, res) => {
 
 const FindSinglEvent = async (req, res) => {
   try {
-    const data = await Events.findOne({ startDate: req.params.startDate });
+    const data = await Events.findOne({ _id: req.params.id });
     res.status(201).json(data);
   } catch (error) {
     console.log(error.message);
@@ -100,18 +107,17 @@ const FindSinglEvent = async (req, res) => {
 };
 
 const UpdateEvent = async (req, res) => {
-  const { errors, isValid } = validateEvent(req.body);
-  try {
-    if (!isValid) {
-      res.status(404).json(errors);
-    } else {
+ try {
       const data = await Events.findOneAndUpdate(
         { _id: req.params.id },
         req.body,
         { new: true }
-      );
-      res.status(201).json(data);
-    }
+      ).then((event) => {
+        console.log(event)
+      }).catch((err) => {
+        res.status(500).send({ message: err.message });
+      });
+      res.status(201).json(data); 
   } catch (error) {
     console.log(error.message);
   }

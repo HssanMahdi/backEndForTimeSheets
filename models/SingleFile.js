@@ -19,7 +19,9 @@ const SingleFileSchema = new Schema(
       type: String,
       required: true,
     },
-    employee: { type: Schema.ObjectId, ref: "employees" },
+    participants:[{
+      type: mongoose.Schema.Types.ObjectId, ref: 'employees',
+    }],
   },
   {
     timestamps: true,

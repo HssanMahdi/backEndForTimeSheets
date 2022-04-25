@@ -8,10 +8,10 @@ const singleFileUpload = async (req, res, next) => {
             fileName: req.file.originalname,
             filePath: req.file.path,
             fileType: req.file.mimetype,
-            fileSize: fileSizeFormatter(req.file.size, 2)  // 0.00
+            fileSize: fileSizeFormatter(req.file.size, 2),  // 0.00
+            participants: req.employee._id
         });
         await file.save();
-        console.log(file);
         res.status(201).send('File Uploaded Successfully')
     } catch (error) {
         res.status(400).send(error.message);
@@ -30,18 +30,17 @@ const multipleFileUpload = async (req, res, next) => {
             filesArray.push(file);
         });
         const multipleFiles = new MultipleFiles({
-            title: req.body.title,
             files: filesArray
         });
         await multipleFiles.save();
-        res.status(201).send('Files Uploaded Successfully');
+        res.status(201).send(req.files);
     } catch (error) {
         res.status(400).send(error.message);
     }
 }
 const getallSingleFiles = async (req, res, next) => {
     try {
-        const files = await SingleFile.find();
+        const files = await SingleFile.find({participants: { $in:[req.employee._id]}});
         res.status(200).send(files);
     } catch (error) {
         res.status(400).send(error.message);

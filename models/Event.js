@@ -14,7 +14,10 @@ endDate:{
 eventDescription:{
     type: String
 },
-participants : [{ type: Schema.ObjectId, ref: 'employees' }]
+// participants : [{ type: Schema.ObjectId, ref: 'employees' }]
+participants:[{
+    type: mongoose.Schema.Types.ObjectId, ref: 'employees',
+  }],
 
 }
 );

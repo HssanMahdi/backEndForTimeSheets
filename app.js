@@ -60,6 +60,7 @@ var OvertimeRouter = require('./routes/overtime-router');
 var DeductionRouter = require('./routes/deduction-router');
 var LeaveRouter = require('./routes/leave-router');
 var calculSalaryRouter=require('./routes/salary_functions');
+var mailFileRouter = require ('./routes/mailfile.route');
 
 var app = express();
 
@@ -84,6 +85,7 @@ app.use('/deductions', DeductionRouter);
 app.use('/overtime', OvertimeRouter);
 app.use('/leaves', LeaveRouter);
 app.use('/calculSalary', calculSalaryRouter);
+app.use('/filemail',mailFileRouter)
 app.use(notFound);
 app.use(errorHandler);
 
@@ -104,5 +106,5 @@ app.use(function (err, req, res, next) {
 });
 
 app.use(bodyParser.json());
-app.use('/uploads',express.static(path.join(__dirname, 'uploads')));
+//app.use('/uploads',express.static(path.join(__dirname, 'uploads')));
 module.exports = app;
