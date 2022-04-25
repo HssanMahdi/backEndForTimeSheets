@@ -304,6 +304,23 @@ const updateEmployee = async (req, res) => {
         console.log(error.message);
     }
 }
+const updateEmployeeById = async (req, res) => {
+    try {
+        const {id} = req.params
+        const updateQuery = req.body
+        const employee = await Employee.findOneAndUpdate({ _id: id }, updateQuery, { new: true })
+        if (employee) {
+            res.status(200)
+            res.send(employee)
+        } else {
+            res.status(400)
+            res.send("something wrong")
+        }
+    } catch (error) {
+        res.status(500).send(error.message);
+        console.log(error.message);
+    }
+}
 module.exports = {
     login,
     signUp,
@@ -317,5 +334,6 @@ module.exports = {
     changeEmployeeState,
     getEmployeeImage,
     faceIdLogin,
-    updateEmployee
+    updateEmployee,
+    updateEmployeeById
 };

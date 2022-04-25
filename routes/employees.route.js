@@ -1,5 +1,5 @@
 var express = require('express');
-const { login, signUp, companysEmployees, forgetPassword, changePassword, deleteEmployee, signUpInACompany, updateEmployeeHours, updateEmployeeNotifications, changeEmployeeState, getEmployeeImage, faceIdLogin, updateEmployee } = require('../controllers/employees.controller');
+const { login, signUp, companysEmployees, forgetPassword, changePassword, deleteEmployee, signUpInACompany, updateEmployeeHours, updateEmployeeNotifications, changeEmployeeState, getEmployeeImage, faceIdLogin, updateEmployee, updateEmployeeById } = require('../controllers/employees.controller');
 const { protect } = require('../middlewares/authMiddleware');
 var router = express.Router();
 
@@ -14,8 +14,9 @@ router.post('/updatenotifs', protect,updateEmployeeNotifications);
 router.put('/changeemployeestate/:id',protect,changeEmployeeState)
 router.delete('/:id', protect, deleteEmployee);
 router.post('/employeeimage',getEmployeeImage);
-router.post('/faceidlogin',faceIdLogin)
-router.put('/updateemployee',protect,updateEmployee)
+router.post('/faceidlogin',faceIdLogin);
+router.put('/updateemployee',protect,updateEmployee);
+router.put('/updateemployee/:id',protect,updateEmployeeById);
 
 module.exports = router;
     

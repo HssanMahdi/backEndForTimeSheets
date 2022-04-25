@@ -70,6 +70,15 @@ io.on("connection", (socket) => {
       }
     }
   });
+  socket.on("chatCreation", (selectedUsers) => {
+    for (let i = 0; i < selectedUsers.length; i++) {
+      for (let j = 0; j < socktable.length; j++) {
+        if (socktable[j]._id == selectedUsers[i]._id) {
+          socket.broadcast.to(socktable[j].idSocket).emit("refetchChats");
+        }
+      }
+    }
+  });
   socket.on("typing", (room) => {
     socket.broadcast.in(room).emit("typing");
     console.log("1");
