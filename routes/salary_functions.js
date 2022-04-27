@@ -68,14 +68,17 @@ async function getOldSalary(salary_id)
     });
     return old_salary;
 }
-async function updateSalarys(salary_id,totalSalary,employ_id){
+async function updateSalarys(salary_id,totalSalary,employ_id,ovt){
 
     sal=new SalaryModel({
         _id:salary_id,
         totalSalary:totalSalary,
-        employees:[employ_id]
+        employees:[employ_id],
+
     })
-await SalaryModel.findByIdAndUpdate(salary_id,sal, { useFindAndModify: false });
+
+await SalaryModel.findByIdAndUpdate(salary_id,{_id:salary_id,
+    totalSalary:totalSalary, employees:[employ_id],$inc: {  overtime:ovt}} , { useFindAndModify: false });
 }
 
 async function calculate_Salary(id_emp){
@@ -93,15 +96,18 @@ ovRate= await GetOvertime();
     await Employee.findById(id_emp).then((emp)=> {
         todaysWorkedHours= emp.todaysWorkedHours;
         hourPrice=emp.hourPrice;
-        overtimeHours=(todaysWorkedHours-company_working_hours);
+        if (todaysWorkedHours > company_working_hours) {
+            overtimeHours = (todaysWorkedHours - company_working_hours);
+        } else {overtimeHours=0};
      salary_id=emp.salary;
      employ_id=emp._id;
+
     });
     old_salary= await getOldSalary(salary_id);
     if(overtimeHours>0){ Salary =(((todaysWorkedHours-overtimeHours)*hourPrice)+(overtimeHours*hourPrice*ovRate));}
     else { Salary =(todaysWorkedHours*hourPrice);}
 
-    await updateSalarys(salary_id,(Salary+old_salary),employ_id);
+    await updateSalarys(salary_id,(Salary+old_salary),employ_id,overtimeHours);
 console.log("Salary: "+old_salary)
 }
 
@@ -109,8 +115,10 @@ async function calculate_Salary_For_All_Employees(){
     var employees=[];
     await Employee.find({}).then((emp)=>{
         emp.map((e)=>{
-               employees.push(e._id)
+if(e.salary.length!==0) {
+    employees.push(e._id)
 
+}
             }
         )
     });
@@ -141,4 +149,18 @@ const calcul_salary={
     calculate_Salary_For_All_Employees,
 
 };
+
+var CronJob=require('cron').CronJob;
+var cronJob1 = new CronJob({
+
+    cronTime: '00 59 23 * * * ',
+    onTick: function () {
+          //Your code that is to be executed on every midnight
+         calculate_Salary_For_All_Employees().then(r =>   console.log("salary calculated"));
+    },
+    start: true,
+    runOnInit: false
+});
+
+
 module.exports=router;

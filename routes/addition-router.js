@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var Additions=  require('../models/Additions');
+var Salary=  require('../models/Salary');
 /* create additions. http://localhost:3000/additions/add */
 router.post('/add',function(req, res, next){
     const body = req.body
@@ -13,7 +14,7 @@ router.post('/add',function(req, res, next){
     }
 
     const additions = new Additions(body)
-
+additions.status="unpaid"
     if (!additions) {
         return res.status(400).json({ success: false, error: err })
     }
@@ -85,6 +86,33 @@ router.delete('/delete/:id',function (req,res) {
 
         return res.status(200).json({ success: true, data: additions })
     }).catch(err => console.log(err))
+})
+
+
+/* reset all leaves. http://localhost:3000/additions/payAddition/:amount */
+router.get('/payAddition/:amount',function (req,res) {
+
+
+    const amount = req.params.amount;
+
+    Salary.updateMany(
+        {},
+        { $inc: { totalSalary: amount,addition:amount} }
+    ).then(()=>{
+        res.send({ message: "addition  paid" })})
+})
+
+/* reset all leaves. http://localhost:3000/additions/paid/:ida */
+router.get('/paid/:ida',function (req,res) {
+
+
+    const id = req.params.ida;
+
+    Additions.updateOne(
+        {_id: id},
+        { $set: { status: "paid"} }
+    ).then(()=>{
+        res.send({ message: "addition status = paid" })})
 })
 
 module.exports = router;

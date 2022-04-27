@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var Salary=  require('../models/Salary');
 var Employee=  require('../models/Employee');
+const {response} = require("express");
 /* create salary. http://localhost:3000/salarys/add */
 router.post('/add',function(req, res, next){
     const body = req.body
@@ -100,7 +101,13 @@ router.get('/showEmp',function (req,res) {
 
 /* Find employee by id. http://localhost:3000/salarys/findEmp */
 router.get('/findEmp/:id',(req,res,next)=>{
-    Employee.findById(req.params.id).then(result=>{res.status(200).json({employee:result})})
+    Employee.findById(req.params.id,(err, employees) => {
+        if (err) {
+            return res.status(400).json({ success: false, error: err })
+        }
+
+        return res.status(200).json([employees])
+    }).catch(err => console.log(err))
 })
 
 /* create salary. http://localhost:3000/salarys/addemp */
@@ -128,6 +135,18 @@ router.post('/addemp',function(req, res, next){
         })
 });
 
+/* update salarys. http://localhost:3000/salarys/affectSalary/:id/salId/:hourPrice */
+router.get('/affectSalary/:id/:salId/:hourPricee',function (req,res) {
 
+
+    const id = req.params.id;
+    const idSal = req.params.salId;
+    const hPrice =req.params.hourPricee;
+    Employee.updateOne(
+        { _id: id },
+        { $addToSet: { salary: idSal },$set: { hourPrice: hPrice } }
+    ).then(()=>{
+        res.send({ message: "salary was affected." })})
+})
 
 module.exports = router;
