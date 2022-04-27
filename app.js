@@ -51,6 +51,9 @@ var chatRouter = require('./routes/chat.route');
 var messageRouter = require('./routes/message.route');
 var eventRouter = require('./routes/event.router');
 var fileRouter = require('./routes/file.router');
+var projectRouter = require('./routes/project');
+var cvRouter = require('./routes/cv');
+
 
 var app = express();
 
@@ -59,6 +62,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname + '/public/videos'));
+
 
 app.use('/', indexRouter);
 app.use('/employee', employeeRouter);
@@ -67,6 +72,10 @@ app.use('/chat', chatRouter);
 app.use('/message', messageRouter);
 app.use('/calendar',eventRouter);
 app.use('/file',fileRouter.routes);
+app.use('/projects', projectRouter);
+app.use('/cv', cvRouter);
+
+
 app.use(notFound);
 app.use(errorHandler);
 

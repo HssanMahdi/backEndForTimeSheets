@@ -24,7 +24,11 @@ technologies:[{type: String,
         required: true}],
 
 tasks : [{ type: Schema.ObjectId, ref: 'tasks' }],
-employees : [{ type: Schema.ObjectId, ref: 'employees' }]
+employees : [{ type: Schema.ObjectId, ref: 'employees' }],
+projectLeader : { type: Schema.ObjectId,
+    ref: 'employees',
+    default:null }
+
 
 },
 { timestamps: true

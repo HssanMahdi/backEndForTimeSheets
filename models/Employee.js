@@ -34,6 +34,11 @@ var EmployeeSchema = new Schema({
     },
 
     skills: [{ type: String }],
+    rating:{
+        type:Number
+    },
+    nbRating:{type:Number},
+    projectsWorked:[{type:String}],
 
     todaysWorkedHours: {
         type: Number

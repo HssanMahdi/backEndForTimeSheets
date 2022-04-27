@@ -1,21 +1,88 @@
 var Task = require('../models/Task')
+// var CV = require('../models/CV')
+
 var Employee = require('../models/Employee');
 var express = require('express');
 const Project = require('../models/Project');
 const { route } = require('express/lib/application');
 const req = require('express/lib/request');
+const employees = require('../models/Employee');
 const router = express.Router();
 
 // Getting all projects
 router.get('/', async (req, res) => {
+    let inProgress=[]
+    let upcoming=[]
+    let finished=[]
     try {
-        const projects = await Project.find()
+        const projects = await Project.find();
         for (i = 0; i < projects.length; i++) {
-            const leader = Employee.findById(projects.projectLeader)
-            //  projects.projectLeader[i]=leader
-            console.log(leader)
+            if(projects[i].projectLeader!=null){
+                const leader = await Employee.findById(projects[i].projectLeader)
+            projects[i].projectLeader = leader
+            }
+            for (j = 0; j < projects[i].tasks.length; j++) {
+               if(projects[i].tasks[j].taskType ="doing"){
+                inProgress.push(projects[i])
+               }
+               if((projects[i].tasks[j].taskType !="doing") && (projects[i].tasks[j].taskType !="done")){
+                upcoming.push(projects[i])
+               }
+               if((projects[i].tasks[j].taskType !="doing") && (projects[i].tasks[j].taskType !="todo")){
+                finished.push(projects[i])
+               }
+            }
         }
-        res.json(projects)
+        let inProgressFinal=[...new Set(inProgress)]
+        let finishedFinal=[...new Set(finished)]
+        let upcomingFinal=[...new Set(upcoming)]
+
+
+        res.json({projects,inProgressFinal,upcomingFinal,finishedFinal})
+        //console.log("inProgress",inProgressFinal,finishedFinal,upcomingFinal)   
+     }
+         catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+})
+
+//get all employees
+router.get('/allEmployees', async (req, res) => {
+    try {
+        const employees = await Employee.find();
+        res.json(employees)
+        //console.log(employees)
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+})
+
+//get all employees sauf projectEmployees
+router.get('/allEmployeesForProject/:id', async (req, res) => {
+    const idProject=req.params.id
+    let tab=[]
+    try {
+        const project=await Project.findById(idProject)
+        console.log('projectttt',project)
+        const projectEmployees=project.employees
+        const allEmployees = await Employee.find()
+    
+        console.log("allEmployees ",allEmployees.length)               
+        for(let i=0;i<allEmployees.length;i++){
+          for(let j=0;j<projectEmployees.length;j++) {
+            console.log('allEmployees[i]._id ', allEmployees[i]._id )
+            console.log('projectEmployees[i] ', projectEmployees[j])
+            console.log('if', allEmployees[i]._id.toString() !== projectEmployees[j].toString())
+            console.log('----------------')
+              if(allEmployees[i]._id.toString()  !== projectEmployees[j].toString() ) {
+                tab.push(allEmployees[i])           
+              }
+          }
+        }
+        let tabFinal=[...new Set(tab)]
+
+        console.log("taaaab ",tabFinal.length)               
+        res.json(tabFinal)
     } catch (err) {
         res.status(500).json({ message: err.message })
     }
@@ -42,8 +109,9 @@ router.get('/:id', async (req, res) => {
             const p = await Employee.findById(project.employees[i])
             tabEmp[i] = p
         }
-        res.json({ project, tabEmp })
-        // console.log(project)
+        project.employees=tabEmp
+        res.json(project)
+        //  console.log(tabEmp)
     } catch (err) {
         res.status(500).json({ message: err.message })
     }
@@ -60,7 +128,7 @@ router.post('/', async (req, res) => {
 
     })
     try {
-        console.log(req.body)
+        // console.log(req.body)
         const newProject = await p.save()
         res.status(201).json(newProject)
     } catch (err) {
@@ -133,12 +201,43 @@ router.post('/addTask/:id', getProject, async (req, res) => {
 })
 
 //update task
-router.put('/updateTask/:id', function (req, res, next) {
-    Task.findByIdAndUpdate(req.params.id, req.body, function (err, docs) {
-        if (err)
-            console.log(err);
-        res.send("task updated");
-    });
+router.patch('/updateTask/:id', async (req, res )=> {
+    const t= await Task.findById(req.params.id)
+    if (req.body.taskName != null) {
+        t.taskName = req.body.taskName
+    }
+    if (req.body.description != null) {
+        t.description = req.body.description
+    }
+    if (req.body.startDate != null) {
+       t.startDate = req.body.startDate
+    }
+    if (req.body.endDate != null) {
+        t.endDate = req.body.endDate
+    }
+    try {
+        const updatedtask = await t.save()
+        res.json(updatedtask)
+    } catch (err) {
+        res.status(400).json({ message: err.message })
+    }
+});
+
+//update emp
+router.put('/updateEmp/:id', async (req, res )=> {
+    const e= await Employee.findById(req.params.id)
+    if (req.body.skills != null) {
+        e.skills=req.body.skills
+        }
+        if (req.body.projectsWorked != null) {
+            e.projectsWorked=req.body.projectsWorked
+            }
+    try {
+        const updatedEmp = await e.save()
+        res.json(updatedEmp)
+    } catch (err) {
+        res.status(400).json({ message: err.message })
+    }
 });
 
 //delete task from project
@@ -188,8 +287,8 @@ router.get('/getProjectTasks/:id', async (req, res) => {
 })
 
 
-// assign employee to project 
-router.put('/assignEmployeeToProject/:id', getProject, async (req, res) => {
+// assign employees to project 
+router.put('/assignEmployeesToProject/:id', getProject, async (req, res) => {
     const id = req.params.id
     //   let tab=[]
     console.log(id)
@@ -212,9 +311,23 @@ router.put('/assignEmployeeToProject/:id', getProject, async (req, res) => {
     catch (err) {
         res.status(400).json({ message: err.message })
     }
-
 })
-
+//assign employee to project
+router.put('/assignEmployeeToProject/:id/:idEmp',  async (req, res) => {
+    const idProj = req.params.id
+    const idEmp=req.params.idEmp
+    try {
+        const project = await Project.findById(idProj)
+        //console.log(project)
+        project.employees.push(idEmp)
+        const updatedProject = await project.save()
+        const emp = await Employee.findByIdAndUpdate({ _id: idEmp }, { $push: { projects:idProj } }).exec()
+        res.json(updatedProject)
+    }
+    catch (err) {
+        res.status(400).json({ message: err.message })
+    }
+})
 //get project employees
 router.get('/getProjectEmployees/:id', async (req, res) => {
     const tab = []
@@ -222,12 +335,11 @@ router.get('/getProjectEmployees/:id', async (req, res) => {
     const project = await Project.findById(id)
     try {
         for (i = 0; i < project.employees.length; i++) {
-            const t = await Employee.findById(project.employees[i])
-            tab.push(t)
+            const emp = await Employee.findById(project.employees[i])
+            tab.push(emp)
         }
         res.json(tab)
     }
-
     catch (err) {
         res.status(500).json({ message: err.message })
     }
@@ -236,21 +348,35 @@ router.get('/getProjectEmployees/:id', async (req, res) => {
 //get employees according to skills
 router.get('/getEmployeesAccordingToSkills/:id', getProject, async (req, res) => {
     const technologies = res.project.technologies
-    const chosenEmployees = []
+    const chosenEmployeesSkill = []
+    const workedProject=[]
     try {
         const employees = await Employee.find()
         for (i = 0; i < employees.length; i++) {
             for (j = 0; j < employees[i].skills.length; j++) {
                 for (k = 0; k < technologies.length; k++) {
                     if (technologies[k] == employees[i].skills[j]) {
-                        chosenEmployees.push(employees[i])
+                        chosenEmployeesSkill.push(employees[i])
                     }
                 }
             }
         }
-        res.json(chosenEmployees)
-
+        for (i = 0; i < employees.length; i++) {
+                    if(employees[i].projectsWorked.length>2){
+                        workedProject.push(employees[i])  
+                        console.log(employees[i].projectsWorked.length)
+                    }
+    
     }
+
+   let maxRatingEmployee= Employee.aggregate([{$group:{_id:{},max:{$max:"$rating"}}}])
+   console.log("maxr",maxRatingEmployee)
+    let workedProjects=[...new Set(workedProject)]
+    let chosenEmployeesSkills=[...new Set(chosenEmployeesSkill)]
+
+
+    res.json({chosenEmployeesSkills,workedProjects})
+}
     catch (err) {
         res.status(400).json({ message: err.message })
     }
@@ -258,19 +384,16 @@ router.get('/getEmployeesAccordingToSkills/:id', getProject, async (req, res) =>
 
 
 //assign employee to task
-router.put('/assignEmployeeToTask/:id', async (req, res) => {
+router.put('/assignEmployeeToTask/:id/:idEmp', async (req, res) => {
     const task = await Task.findById(req.params.id)
     const id = req.params.id
-    console.log(task)
-    console.log(task.employee)
-    if (req.body.employee != null) {
-        task.employee = req.body.employee
-    }
+        //console.log("body",req.params.idEmp)
+        task.employee = req.params.idEmp
     try {
         const t = await task.save();
         const emp = task.employee
         Employee.findByIdAndUpdate({ _id: emp }, { $push: { tasks: id } }).then(employee => {
-            console.log(employee);
+            // console.log(employee);
         })
         res.json(task)
     } catch (err) {
@@ -278,16 +401,15 @@ router.put('/assignEmployeeToTask/:id', async (req, res) => {
     }
 })
 //get task employee
-router.get('/getTaskEmploye/:id', async (req, res) => {
-    const tab = []
+router.get('/getTaskEmployee/:id', async (req, res) => {
     const id = req.params.id
-    const project = await Project.findById(id)
     try {
-        for (i = 0; i < project.employees.length; i++) {
-            const t = await Employee.findById(project.employees[i])
-            tab.push(t)
-        }
-        res.json(tab)
+        const task = await Task.findById(id)
+        // console.log(task.employee)
+        const emp = await Employee.findById(task.employee)
+        task.employee = emp
+
+        res.json(task)
     }
 
     catch (err) {
@@ -295,31 +417,47 @@ router.get('/getTaskEmploye/:id', async (req, res) => {
     }
 })
 
-//get task by id with employee
-router.get('getTask/:id', async (req, res) => {
-    try {
-        const task = await Task.findById(req.params.id)
-        const emp = Employee.findById(task.employee)
-        task.employee = emp
-        res.json(task)
-        // console.log(project)
-    } catch (err) {
-        res.status(500).json({ message: err.message })
-    }
-})
 //delete employee from task
 router.delete('/deleteEmployeeFromTask/:id', async (req, res) => {
     const id = req.params.id
-    console.log(id)
+    // console.log(id)
     try {
         const t = await Task.findById(id);
         const emp = t.employee
         console.log("emp" + emp)
         Employee.findByIdAndUpdate({ _id: emp }, { $pull: { tasks: id } }).then(employee => {
-            console.log(employee);
+            // console.log(employee);
         })
         Task.findByIdAndUpdate({ _id: id }, { $unset: { employee: emp } }).then(task => {
-            console.log(task);
+            // console.log(task);
+        })
+        res.json("deleted")
+    } catch (err) {
+        return res.status(500).json({ message: err.message })
+    }
+})
+//get employee for project
+router.get('/getEmployeeForProject', async (req, res) => {
+    
+    try {
+        const allEmployees=await Project.find()
+        res.json(allEmployees)
+    }
+    catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+})
+//delete employee from project
+
+router.delete('/deleteEmployeeFromProject/:id/:idEmp', async (req, res) => {
+    const id = req.params.id
+    const idEmp = req.params.idEmp
+    try {        
+        Employee.findByIdAndUpdate({ _id: idEmp }, { $pull: { projects: id } }).then(employee => {
+            // console.log(employee);
+        })
+        Project.findByIdAndUpdate({ _id: id }, { $pull: { employees: idEmp } }).then(project => {
+            // console.log(task);
         })
         res.json("deleted")
     } catch (err) {
@@ -327,7 +465,62 @@ router.delete('/deleteEmployeeFromTask/:id', async (req, res) => {
     }
 })
 
-//delete employee from project
+
+//delete project leader from project
+router.delete('/deleteProjectLeaderFromProject/:id', async (req, res) => {
+    const id = req.params.id
+    try {
+        const proj= await Project.findById(id)
+        const projLeader=proj.projectLeader
+        Employee.findByIdAndUpdate({ _id: projLeader }, { $unset: { project: id } }).then(employee => {
+             console.log(employee.project);
+        })
+        Project.findByIdAndUpdate({ _id: id }, { $unset: { projectLeader: projLeader } }).then(project => {
+             console.log(project);
+        })
+        res.json("deleted")
+    } catch (err) {
+        return res.status(500).json({ message: err.message })
+    }
+})
+
+
+
+
+//Add project leader To project
+router.put('/assignProjectLeaderToProject/:idProj/:idEmp', async (req, res) => {
+    const idProj = req.params.idProj
+    const idEmp = req.params.idEmp
+
+    try {
+        Employee.findByIdAndUpdate({ _id: idEmp }, { $set: { project: idProj } }).then(employee => {
+        })
+        Project.findByIdAndUpdate({ _id: idProj }, { $set: { projectLeader: idEmp } }).then(project => {
+        })
+        res.json("added")
+    } catch (err) {
+        return res.status(500).json({ message: err.message })
+    }
+})
+
+
+//rating employee
+router.put('/ratingEmployee/:id', async (req, res )=> {
+    try {
+        const emp= await Employee.findById(req.params.id)
+        if (req.body.rating != 0) {
+           emp.nbRating=emp.nbRating+1
+            var x= (req.body.rating+emp.rating)/emp.nbRating
+            console.log("x",x)
+            emp.rating =x
+        }
+        const updatedEmployee = await emp.save()
+        res.json(updatedEmployee.rating)
+        console.log("e",updatedEmployee.rating)
+    } catch (err) {
+        res.status(400).json({ message: err.message })
+    }
+});
 
 
 async function getProject(req, res, next) {
