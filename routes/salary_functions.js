@@ -107,7 +107,7 @@ ovRate= await GetOvertime();
     if(overtimeHours>0){ Salary =(((todaysWorkedHours-overtimeHours)*hourPrice)+(overtimeHours*hourPrice*ovRate));}
     else { Salary =(todaysWorkedHours*hourPrice);}
 
-    await updateSalarys(salary_id,(Salary+old_salary),employ_id,overtimeHours);
+    await updateSalarys(salary_id,((Salary+old_salary)/60),employ_id,overtimeHours);
 console.log("Salary: "+old_salary)
 }
 
