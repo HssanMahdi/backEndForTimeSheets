@@ -504,7 +504,23 @@ router.put('/assignProjectLeaderToProject/:idProj/:idEmp', async (req, res) => {
 })
 
 
-
+//rating employee
+router.put('/ratingEmployee/:id', async (req, res )=> {
+    try {
+        const emp= await Employee.findById(req.params.id)
+        if (req.body.rating != 0) {
+           emp.nbRating=emp.nbRating+1
+            var x= (req.body.rating+emp.rating)/emp.nbRating
+            console.log("x",x)
+            emp.rating =x
+        }
+        const updatedEmployee = await emp.save()
+        res.json(updatedEmployee.rating)
+        console.log("e",updatedEmployee.rating)
+    } catch (err) {
+        res.status(400).json({ message: err.message })
+    }
+});
 
 
 async function getProject(req, res, next) {
