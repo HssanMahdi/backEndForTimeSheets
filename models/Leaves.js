@@ -9,7 +9,7 @@ leaveType:String,
 reason:String,
 status:String,
 paidLeave:Boolean,
-employees : [{ type: Schema.ObjectId, ref: 'Employee' }]
+userName : String,
 
 }
 );

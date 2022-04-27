@@ -4,7 +4,8 @@ const Schema = mongoose.Schema;
 var AdditionSchema = new Schema({
 name:String,
 amountOfAddition: Number,
-    date:Date
+    date:Date,
+    status:String
 }
 );
 

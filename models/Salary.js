@@ -8,6 +8,7 @@ var SalarySchema = new Schema({
         overtime:Number,
         deductions:Number,
         totalSalary:Number,
+        userName:String,
         employees : [{ type: Schema.ObjectId, ref: 'employees' }]
 
     }
