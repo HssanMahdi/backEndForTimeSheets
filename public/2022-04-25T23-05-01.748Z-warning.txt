@@ -1,4 +1,0 @@
-<delete dir="${dist.dir}" followsymlinks="false" includeemptydirs="true"/>
-
-API key
-AIzaSyDal7EXI58xj5XuxReYbLQYKDQiWGBJyaY
