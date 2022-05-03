@@ -38,7 +38,8 @@ var EmployeeSchema = new Schema({
         type:Number
     },
     nbRating:{type:Number},
-    projectsWorked:[{type:String}],
+
+    workedProjects: [{ type: Schema.ObjectId, ref:'workedProjects' }],
 
     todaysWorkedHours: {
         type: Number

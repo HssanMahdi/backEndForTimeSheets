@@ -12,6 +12,7 @@ startDate:{
     required: true
 
 },
+progress:{type:Number},
 endDate:{
     type: Date,
     required: true
