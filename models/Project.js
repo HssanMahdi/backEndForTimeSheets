@@ -12,6 +12,7 @@ startDate:{
     required: true
 
 },
+progress:{type:Number},
 endDate:{
     type: Date,
     required: true
@@ -23,16 +24,13 @@ description:{
 technologies:[{type: String,
         required: true}],
 
-tasks : [{ type: Schema.ObjectId, 
-           ref: 'tasks',
-           default:null }],
-employees : [{ type: Schema.ObjectId,
-     ref: 'employees',
-     default:null }],
-     
+tasks : [{ type: Schema.ObjectId, ref: 'tasks' }],
+employees : [{ type: Schema.ObjectId, ref: 'employees' }],
 projectLeader : { type: Schema.ObjectId,
-     ref: 'employees',
-     default:null }
+    ref: 'employees',
+    default:null }
+
+
 },
 { timestamps: true
 }

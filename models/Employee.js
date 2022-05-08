@@ -80,6 +80,12 @@ var EmployeeSchema = new Schema({
     leaves: [{ type: Schema.ObjectId, ref: 'leaves' }],
 
     salary: [{ type: Schema.ObjectId, ref: 'salary' }],
+rating:{
+        type:Number
+    },
+    nbRating:{type:Number},
+
+    workedProjects: [{ type: Schema.ObjectId, ref:'workedProjects' }],
 
     projects: [{ type: Schema.ObjectId, ref: 'projects' }]
 },
